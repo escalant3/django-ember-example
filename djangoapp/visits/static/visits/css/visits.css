@@ -1,0 +1,68 @@
+body {
+    font-family: Helvetica, Arial, sans-serif;
+    color: #FF6B47;
+    background-color:#666;
+}
+
+div#content {
+    padding: 30px;
+    margin: 0 auto;
+    width: 600px;
+    height: 500px;
+    background-color:#333;
+    border-radius: 15px;
+    -moz-border-radius: 15px;
+}
+
+div#right-panel {
+    width: 60%;
+    height: 500px;
+    float: right;
+}
+
+div#customers-list {
+    position: absolute;
+    top: 30;
+    left: 30;
+    height: 400px;
+}
+
+div#customer-detail {
+}
+
+ul, .ember-checkbox {
+    list-style-type: none;
+    padding-left: 0px;
+    color: #665F5E;
+}
+
+li.customer, .ember-checkbox {
+    padding-left: 5px;
+    height: 40px;
+    line-height:40px;
+    border-bottom:2px solid #EBE4E3;
+    border-top:2px solid #FAF7F6;
+    background-color: #F5EEED;
+    font-size: medium;
+}
+
+label{
+    font-size: small;
+}
+
+.selected {
+    color: #FF6B47;
+}
+
+ul.log-list {
+    list-style-type: square;
+    list-style-position: inside;
+    background-color: #111;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+}
+
+li.visit-log {
+    font-size: small;
+    height: 15px;
+}
