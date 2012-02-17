@@ -193,21 +193,22 @@ App.VisitsTodoView = Em.CollectionView.extend({
 App.CustomersView = Em.CollectionView.extend({
   contentBinding: 'App.customerController.content',
   tagName: "ul",
+  selectedCustomerBinding: 'App.customerController.selectedCustomer',
 
   //NOTE Formerly known as itemView
   itemViewClass: Em.View.extend({
     classNames: ['customer'],
     classNameBindings: ['selected'],
     selected: Em.computed(function(){
-      if (!!App.customerController.get('selectedCustomer')) {
-          return (App.customerController.get('selectedCustomer').get('name') === this.getPath('content.name'));
+      if (!!this.getPath('parentView.selectedCustomer')) {
+          return (this.getPath('parentView.selectedCustomer.name') === this.getPath('content.name'));
       } else {
           return false;
       }
-    }).property('App.customerController.selectedCustomer'),
+    }).property('parentView.selectedCustomer'),
     template: Em.Handlebars.compile('{{content.name}}'),
     mouseDown: function(evt) {
-      App.customerController.set('selectedCustomer', this.get('content'));
+      this.get('parentView').set('selectedCustomer', this.get('content'));
     }
   })
 });
