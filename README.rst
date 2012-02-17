@@ -14,8 +14,11 @@ Installation
 ------------
 
     $ pip install -r requirements.txt
+
     $ cd djangoapp
+
     $ python manage.py syncdb
+
     $ python manage.py runserver
 
 Usage
