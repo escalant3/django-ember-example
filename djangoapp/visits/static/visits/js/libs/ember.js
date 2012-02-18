@@ -1735,7 +1735,7 @@ if ('undefined' === typeof Ember) {
 /**
   @namespace
   @name Ember
-  @version 0.9.4
+  @version 0.9.5
 
   All Ember methods and functions are defined inside of this namespace.
   You generally should not add new properties to this namespace as it may be
@@ -1767,10 +1767,10 @@ if ('undefined' !== typeof window) {
 /**
   @static
   @type String
-  @default '0.9.4'
+  @default '0.9.5'
   @constant
 */
-Ember.VERSION = '0.9.4';
+Ember.VERSION = '0.9.5';
 
 /**
   @static
@@ -6299,6 +6299,8 @@ function findNamespaces() {
     //  get(window.globalStorage, 'isNamespace') would try to read the storage for domain isNamespace and cause exception in Firefox.
     // globalStorage is a storage obsoleted by the WhatWG storage specification. See https://developer.mozilla.org/en/DOM/Storage#globalStorage
     if (prop === "globalStorage" && window.StorageList && window.globalStorage instanceof window.StorageList) { continue; }
+    // Don't access properties on parent window, which will throw "Access/Permission Denied" in IE/Firefox for windows on different domains
+    if (prop === "parent" || prop === "top" || prop === "frameElement" || prop === "content") { continue; }
     // Unfortunately, some versions of IE don't support window.hasOwnProperty
     if (window.hasOwnProperty && !window.hasOwnProperty(prop)) { continue; }
 
@@ -11296,6 +11298,18 @@ Ember.View = Ember.Object.extend(
   templateName: null,
 
   /**
+    The name of the layout to lookup if no layout is provided.
+
+    Ember.View will look for a template with this name in this view's
+    `templates` object. By default, this will be a global object
+    shared in `Ember.TEMPLATES`.
+
+    @type String
+    @default null
+  */
+  layoutName: null,
+
+  /**
     The hash in which to look for `templateName`.
 
     @type Ember.Object
@@ -11317,25 +11331,46 @@ Ember.View = Ember.Object.extend(
   template: Ember.computed(function(key, value) {
     if (value !== undefined) { return value; }
 
-    var templateName = get(this, 'templateName'), template;
+    var templateName = get(this, 'templateName'),
+        template = this.templateForName(templateName, 'template');
 
-    if (templateName) { template = get(get(this, 'templates'), templateName); }
-
-    // If there is no template but a templateName has been specified,
-    // try to lookup as a spade module
-    if (!template && templateName) {
-      if ('undefined' !== require && require.exists) {
-        if (require.exists(templateName)) { template = require(templateName); }
-      }
-
-      if (!template) {
-        throw new Ember.Error(fmt('%@ - Unable to find template "%@".', [this, templateName]));
-      }
-    }
-
-    // return the template, or undefined if no template was found
     return template || get(this, 'defaultTemplate');
   }).property('templateName').cacheable(),
+
+  /**
+    A view may contain a layout. A layout is a regular template but
+    supercedes the `template` property during rendering. It is the
+    responsibility of the layout template to retrieve the `template`
+    property from the view and render it in the correct location.
+
+    This is useful for a view that has a shared wrapper, but which delegates
+    the rendering of the contents of the wrapper to the `template` property
+    on a subclass.
+
+    @field
+    @type Function
+  */
+  layout: Ember.computed(function(key, value) {
+    if (arguments.length === 2) { return value; }
+
+    var layoutName = get(this, 'layoutName'),
+        layout = this.templateForName(layoutName, 'layout');
+
+    return layout || get(this, 'defaultLayout');
+  }).property('layoutName').cacheable(),
+
+  templateForName: function(name, type) {
+    if (!name) { return; }
+
+    var templates = get(this, 'templates'),
+        template = get(templates, name);
+
+    if (!template) {
+     throw new Ember.Error(fmt('%@ - Unable to find %@ "%@".', [this, type, name]));
+    }
+
+    return template;
+  },
 
   /**
     The object from which templates should access properties.
@@ -11499,7 +11534,10 @@ Ember.View = Ember.Object.extend(
     @param {Ember.RenderBuffer} buffer The render buffer
   */
   render: function(buffer) {
-    var template = get(this, 'template');
+    // If this view has a layout, it is the responsibility of the
+    // the layout to render the view's template. Otherwise, render the template
+    // directly.
+    var template = get(this, 'layout') || get(this, 'template');
 
     if (template) {
       var context = get(this, 'templateContext'),
@@ -13412,8 +13450,6 @@ Ember.State = Ember.Object.extend({
 
 (function(exports) {
 var get = Ember.get, set = Ember.set, getPath = Ember.getPath, fmt = Ember.String.fmt;
-Ember.LOG_STATE_TRANSITIONS = false;
-
 /**
   @class
 */
@@ -13478,19 +13514,19 @@ Ember.StateManager = Ember.State.extend(
   },
 
   sendRecursively: function(event, currentState, context) {
-    var log = Ember.LOG_STATE_TRANSITIONS;
+    var log = this.enableLogging;
 
     var action = currentState[event];
 
     if (action) {
-      if (log) { console.log(fmt("STATEMANAGER: Sending event '%@' to state %@.", [event, currentState.name])); }
+      if (log) { console.log(fmt("STATEMANAGER: Sending event '%@' to state %@.", [event, get(currentState, 'path')])); }
       action.call(currentState, this, context);
     } else {
       var parentState = get(currentState, 'parentState');
       if (parentState) {
         this.sendRecursively(event, parentState, context);
       } else if (get(this, 'errorOnUnhandledEvent')) {
-        throw new Ember.Error(this.toString() + " could not respond to event " + event + " in state " + getPath(this, 'currentState.name') + ".");
+        throw new Ember.Error(this.toString() + " could not respond to event " + event + " in state " + getPath(this, 'currentState.path') + ".");
       }
     }
   },
@@ -13598,7 +13634,7 @@ Ember.StateManager = Ember.State.extend(
   },
 
   enterState: function(exitStates, enterStates, state) {
-    var log = Ember.LOG_STATE_TRANSITIONS;
+    var log = this.enableLogging;
 
     var stateManager = this;
 
@@ -13607,7 +13643,7 @@ Ember.StateManager = Ember.State.extend(
       state.exit(stateManager, transition);
     }, function() {
       this.asyncEach(enterStates, function(state, transition) {
-        if (log) { console.log("STATEMANAGER: Entering " + state.name); }
+        if (log) { console.log("STATEMANAGER: Entering " + get(state, 'path')); }
         state.enter(stateManager, transition);
       }, function() {
         var startState = state, enteredState, initialState;
@@ -13622,7 +13658,7 @@ Ember.StateManager = Ember.State.extend(
         while (startState = get(get(startState, 'states'), initialState)) {
           enteredState = startState;
 
-          if (log) { console.log("STATEMANAGER: Entering " + startState.name); }
+          if (log) { console.log("STATEMANAGER: Entering " + get(startState, 'path')); }
           startState.enter(stateManager);
 
           initialState = get(startState, 'initialState');
@@ -15734,6 +15770,27 @@ EmberHandlebars.registerHelper('action', function(actionName, options) {
 
   var actionId = ActionHelper.registerAction(actionName, eventName, target, view, context);
   return new EmberHandlebars.SafeString('data-ember-action="' + actionId + '"');
+});
+
+})({});
+
+
+(function(exports) {
+var get = Ember.get, set = Ember.set;
+
+Ember.Handlebars.registerHelper('yield', function(options) {
+  var view = options.data.view, template;
+
+  while (view && !get(view, 'layout')) {
+    view = get(view, 'parentView');
+  }
+
+  ember_assert("You called yield in a template that was not a layout", !!view);
+
+  template = get(view, 'template');
+
+  ember_assert("You called yield on " + view.toString() + " without supplying a template", !!template);
+  template(this, options);
 });
 
 })({});
