@@ -6,10 +6,8 @@ from visits.models import Customer, VisitLog
 
 
 class CustomerResource(ModelResource):
-    def dispatch_list(self, request, **kwargs):
-        #import ipdb;ipdb.set_trace()
-        return super(CustomerResource, self).dispatch_list(request,
-                **kwargs)
+
+    visitLogs = fields.ToManyField('visits.api.VisitLogResource', 'visitlog_set', full=True)
 
     class Meta:
         queryset = Customer.objects.all()
@@ -28,7 +26,7 @@ class CustomerResource(ModelResource):
 
 class VisitLogResource(ModelResource):
 
-    customer = fields.ForeignKey(CustomerResource, 'customer') 
+    customer = fields.ToOneField(CustomerResource, 'customer') 
 
     class Meta:
         queryset = VisitLog.objects.all()

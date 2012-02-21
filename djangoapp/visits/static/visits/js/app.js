@@ -33,6 +33,7 @@ App.Customer = DS.Model.extend({
   dateNextVisit: DS.attr('string'),
   typeNextVisit: DS.attr('string'),
   isDone: DS.attr('boolean'),
+  visitLogs: DS.hasMany('App.VisitLog', {embedded: true}),
 
   visitText: Em.computed(function(){
     return this.get('name') + " (" + 
@@ -49,12 +50,7 @@ App.Customer = DS.Model.extend({
 App.VisitLog = DS.Model.extend({
   visitDate: DS.attr('string'),
   visitType: DS.attr('string'),
-  //TODO Should be hasOne. Adapter does not support related objects yt
-  customer: DS.attr('string'),
-  getCustomerId: function(){
-    var temp = this.get('customer').split('/');
-    return temp[temp.length-2];
-  }
+  customer: DS.hasOne('App.Customer')
 });
 
 
@@ -105,8 +101,7 @@ App.customerController = Em.ArrayController.create({
         var visitLog = App.store.createRecord(App.VisitLog, {
           visitDate: item.get('dateNextVisit'),
           visitType: item.get('typeNextVisit'),
-          // TODO Adapter does not support relations yet
-          customer: "/api/v1/customer/" + item.get('id') + '/'
+          customer: item.get('id')
         });
         item.set('isDone', false);
         item.set('dateNextVisit', '');
@@ -131,18 +126,7 @@ App.visitLogController = Em.ArrayController.create({
   filteredContent: Em.observer(function(){
     var customer = this.get('selectedCustomer');
     if (customer !== undefined){
-      var temp, customerId;
-      var filtered = App.store.filter(App.VisitLog, function(item){
-          //TODO To be improve with a relation capable adapter
-          temp = item.customer.split('/');
-          customerId = temp[temp.length-2];
-          if (customerId == customer.get('id')){
-            return true;
-          }
-      })
-      this.set('content', filtered);
-    } else {
-        return [];
+      this.set('content', customer.get('visitLogs'));
     }
   }, 'selectedCustomer')
 });
