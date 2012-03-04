@@ -18,6 +18,7 @@ var App = Em.Application.create();
  * Ember-data store using the Django Tastypie adapter
  */
 App.store = DS.Store.create({
+  revision: 2,
   adapter: DS.DjangoTastypieAdapter.create()
 });
 
@@ -60,6 +61,7 @@ App.VisitLog = DS.Model.extend({
  */
 App.customerController = Em.ArrayController.create({
   content: App.store.findAll(App.Customer),
+  //content: null,
 
   selectedCustomer: undefined,
 
@@ -101,14 +103,14 @@ App.customerController = Em.ArrayController.create({
         var visitLog = App.store.createRecord(App.VisitLog, {
           visitDate: item.get('dateNextVisit'),
           visitType: item.get('typeNextVisit'),
-          customer: item.get('id')
+          customer: item
         });
         item.set('isDone', false);
         item.set('dateNextVisit', '');
         item.set('typeNextVisit', '');
-        App.store.commit();
       }
     });
+    App.store.commit();
   },
 
   saveChanges: function(){
