@@ -16,5 +16,5 @@ class VisitLog(models.Model):
     customer = models.ForeignKey(Customer)
 
     def __unicode__(self):
-        return "%s - %s" % (self.visitDate,
-                            self.visitType)
+        return "%s - %s" % (self.visit_date,
+                            self.visit_type)
