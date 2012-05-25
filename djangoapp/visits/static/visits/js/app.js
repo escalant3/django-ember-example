@@ -1,4 +1,4 @@
-/* 
+/*
  * A dummy application following the MVC pattern with Ember.js
  *
  * It can be used as skeleton to develop more complex apps.
@@ -18,14 +18,14 @@ var App = Em.Application.create();
  * Ember-data store using the Django Tastypie adapter
  */
 App.store = DS.Store.create({
-  revision: 2,
+  revision: 4,
   adapter: DS.DjangoTastypieAdapter.create()
 });
 
 
 /**
  * Defines a customer model. Attribute names match the ones in the
- * server. It also allows for local attributes that are not 
+ * server. It also allows for local attributes that are not
  * commited (isDone) as well as computed synchronized properties
  * (visitText).
  */
@@ -37,21 +37,21 @@ App.Customer = DS.Model.extend({
   visitLogs: DS.hasMany('App.VisitLog', {embedded: true}),
 
   visitText: Em.computed(function(){
-    return this.get('name') + " (" + 
-      this.get('dateNextVisit') + " - " + 
+    return this.get('name') + " (" +
+      this.get('dateNextVisit') + " - " +
       this.get('typeNextVisit') + ")";
-  }).property('name', 'dateNextVisit', 'typeNextVisit') 
+  }).property('name', 'dateNextVisit', 'typeNextVisit')
 });
 
 
-/** 
+/**
  * Defines a VisitLog model. A dummy piece of information to
  * work with "related models"
  */
 App.VisitLog = DS.Model.extend({
   visitDate: DS.attr('string'),
   visitType: DS.attr('string'),
-  customer: DS.hasOne('App.Customer')
+  customer: DS.belongsTo('App.Customer')
 });
 
 
@@ -66,7 +66,7 @@ App.customerController = Em.ArrayController.create({
   selectedCustomer: undefined,
 
   noEditable: Em.computed(function(){
-    return (this.get('selectedCustomer') === undefined)
+    return (this.get('selectedCustomer') === undefined);
   }).property('selectedCustomer'),
 
   createCustomer: function(name){
@@ -90,7 +90,7 @@ App.customerController = Em.ArrayController.create({
   
   visitsTodo: Em.computed(function(){
     var table = this.filter(function(item, index, self){
-      if (item.get('dateNextVisit') != null && item.get('dateNextVisit') !== "") {
+      if (item.get('dateNextVisit') !== null && item.get('dateNextVisit') !== "") {
         return true;
       }
     });
@@ -149,7 +149,7 @@ App.CreateCustomerView = Em.TextField.extend({
 });
 
 
-/** 
+/**
  * View to mark visits as done and create their logs
  */
 App.MarkAsDoneView = Em.Button.extend({
@@ -161,14 +161,14 @@ App.MarkAsDoneView = Em.Button.extend({
 });
 
 
-/** 
+/**
  * A list of the pending visits to do
  */
 App.VisitsTodoView = Em.CollectionView.extend({
   contentBinding: Em.Binding.oneWay('App.customerController.visitsTodo'),
   itemViewClass: Em.Checkbox.extend({
     titleBinding: 'content.visitText',
-    valueBinding: 'content.isDone',
+    valueBinding: 'content.isDone'
   })
 });
 
@@ -264,7 +264,7 @@ App.CustomerDetailView = Em.ContainerView.extend({
       })
     })
   })
-})
+});
 
 // Loading initial data
 App.store.findAll(App.VisitLog);
