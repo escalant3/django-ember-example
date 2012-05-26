@@ -34,7 +34,7 @@ App.Customer = DS.Model.extend({
   dateNextVisit: DS.attr('string'),
   typeNextVisit: DS.attr('string'),
   isDone: DS.attr('boolean'),
-  visitLogs: DS.hasMany('App.VisitLog', {embedded: true}),
+  visitLogs: DS.hasMany('App.VisitLog'),
 
   visitText: Em.computed(function(){
     return this.get('name') + " (" +
@@ -86,8 +86,7 @@ App.customerController = Em.ArrayController.create({
     }
     return null;
   },
-
-  
+ 
   visitsTodo: Em.computed(function(){
     var table = this.filter(function(item, index, self){
       if (item.get('dateNextVisit') !== null && item.get('dateNextVisit') !== "") {
@@ -267,7 +266,7 @@ App.CustomerDetailView = Em.ContainerView.extend({
 });
 
 // Loading initial data
-App.store.findAll(App.VisitLog);
+//App.store.findAll(App.VisitLog);
 
 // View creation
 var createCustomerView = App.CreateCustomerView.create({});

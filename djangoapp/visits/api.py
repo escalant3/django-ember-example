@@ -7,7 +7,7 @@ from visits.models import Customer, VisitLog
 
 class CustomerResource(ModelResource):
 
-    visitLogs = fields.ToManyField('visits.api.VisitLogResource', 'visitlog_set', full=True)
+    visit_logs = fields.ToManyField('visits.api.VisitLogResource', 'visitlog_set')
 
     class Meta:
         queryset = Customer.objects.all()
@@ -17,16 +17,15 @@ class CustomerResource(ModelResource):
         authorization = Authorization()
         list_allowed_methods = ['get', 'post']
         detail_allowed_methods = ['get', 'post', 'put', 'delete']
-        
-        # This option is necessary cause ember-data expects 
+
+        # This option is necessary cause ember-data expects
         # return data after a POST or PUT
         always_return_data = True
 
 
-
 class VisitLogResource(ModelResource):
 
-    customer = fields.ToOneField(CustomerResource, 'customer') 
+    customer_id = fields.ToOneField(CustomerResource, 'customer')
 
     class Meta:
         queryset = VisitLog.objects.all()
@@ -36,9 +35,7 @@ class VisitLogResource(ModelResource):
         authorization = Authorization()
         list_allowed_methods = ['get', 'post']
         detail_allowed_methods = ['get', 'post', 'put', 'delete']
-        
-        # This option is necessary cause ember-data expects 
+
+        # This option is necessary cause ember-data expects
         # return data after a POST or PUT
         always_return_data = True
-
-
