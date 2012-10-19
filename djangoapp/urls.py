@@ -1,7 +1,7 @@
 from django.conf.urls.defaults import patterns, include, url
 
 from tastypie.api import Api
-from visits.api import CustomerResource, VisitLogResource
+from tasks.api import PersonResource, TaskResource
 
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
@@ -11,8 +11,8 @@ admin.autodiscover()
 
 #REST API
 v1_api = Api(api_name='v1')
-v1_api.register(CustomerResource())
-v1_api.register(VisitLogResource())
+v1_api.register(PersonResource())
+v1_api.register(TaskResource())
 
 urlpatterns = patterns('',
     # Examples:
@@ -25,7 +25,7 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/', include(v1_api.urls)),
-    url(r'^$', 'djangoapp.visits.views.main'),
+    url(r'^$', 'djangoapp.tasks.views.main'),
 )
 
 urlpatterns += staticfiles_urlpatterns()

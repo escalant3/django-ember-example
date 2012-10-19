@@ -2,16 +2,19 @@ from tastypie import fields
 from tastypie.authorization import Authorization
 from tastypie.resources import ModelResource
 
-from visits.models import Customer, VisitLog
+from tasks.models import Person, Task
 
 
-class CustomerResource(ModelResource):
+class PersonResource(ModelResource):
 
-    visit_logs = fields.ToManyField('visits.api.VisitLogResource', 'visitlog_set')
+    #tags = fields.ToManyField('tasks.api.TagResource', 'tag_set')
 
     class Meta:
-        queryset = Customer.objects.all()
-        resource_name = 'customer'
+        queryset = Person.objects.all()
+        resource_name = 'person'
+        filtering = {
+            'name': ['exact']
+        }
 
         # Authorization is needed for write methods
         authorization = Authorization()
@@ -23,13 +26,13 @@ class CustomerResource(ModelResource):
         always_return_data = True
 
 
-class VisitLogResource(ModelResource):
+class TaskResource(ModelResource):
 
-    customer_id = fields.ToOneField(CustomerResource, 'customer')
+    person_id = fields.ToOneField(PersonResource, 'person', null=True)
 
     class Meta:
-        queryset = VisitLog.objects.all()
-        resource_name = 'visit_log'
+        queryset = Task.objects.all()
+        resource_name = 'task'
 
         # Authorization is needed for write methods
         authorization = Authorization()
