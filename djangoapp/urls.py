@@ -1,7 +1,7 @@
 from django.conf.urls.defaults import patterns, include, url
 
 from tastypie.api import Api
-from tasks.api import PersonResource, TaskResource
+from tasks.api import PersonResource, TaskResource, TagResource
 
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
@@ -13,6 +13,7 @@ admin.autodiscover()
 v1_api = Api(api_name='v1')
 v1_api.register(PersonResource())
 v1_api.register(TaskResource())
+v1_api.register(TagResource())
 
 urlpatterns = patterns('',
     # Examples:

@@ -34,6 +34,7 @@
       <div class="row">
         <div class="span8">
           <h2>People</h2>
+
           {{outlet}}
         </div>
       </div>
@@ -48,7 +49,6 @@
     {{#each person in controller}}
       <li>
         <a {{action showPerson person}}> {{person.name}} </a>
-        <a {{action editName}}><i class="icon-pencil"></i></a>
       </li>
     {{/each}}
     </ul>
@@ -57,6 +57,39 @@
 
   <script type="text/x-handlebars" data-template-name="person">
     <h3>{{ name }}</h3>
+    <ul class="unstyled">
+      <li>
+        <a {{action editPerson}}><i class="icon-pencil"></i>Edit name</a>
+      </li>
+      <li>
+        <a {{action deletePerson}}><i class="icon-remove"></i>Delete</a>
+      </li>
+    </ul>
+    <h4>Tasks</h4>
+    {{view App.CreateTaskView person=this}}
+    <ul>
+    {{#each task in tasks}}
+      <li>
+        <a {{action showTask task}}>{{ task.name }}</a>
+        <a {{ action deleteTask task}}><i class="icon-remove"></i></a>
+      </li>
+    {{/each}}
+    </ul>
+  </script>
+
+  <script type="text/x-handlebars" data-template-name="task">
+    {{ name }}
+
+    <h4>Tags</h4>
+    {{view App.CreateTagView task=this}}
+    <ul>
+    {{#each tag in tags}}
+      <li>
+        {{ tag.name }}
+        <a {{ action deleteTag tag}}><i class="icon-remove"></i></a>
+      </li>
+    {{/each}}
+    </ul>
 
   </script>
 

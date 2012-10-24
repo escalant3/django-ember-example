@@ -33,6 +33,12 @@ App.PersonView = Ember.View.extend({
 });
 App.PersonController = Ember.ObjectController.extend();
 
+// Task controller and view
+App.TaskView = Ember.View.extend({
+  templateName: 'task'
+});
+App.TaskController = Ember.ObjectController.extend();
+
 // Create new person view
 App.CreatePersonView = Em.TextField.extend({
   placeholder: "Add new people",
@@ -40,6 +46,44 @@ App.CreatePersonView = Em.TextField.extend({
     var value = this.get('value');
     if (value) {
       App.Person.createRecord({name: value});
+      App.store.commit();
+      this.set('value', '');
+    }
+  }
+});
+
+App.CreateTaskView = Em.TextField.extend({
+  placeholder: "Add a task",
+  insertNewline: function() {
+    var value,
+        person,
+        task;
+
+    value = this.get('value');
+    person = this.get('person');
+    if (!!value && !!person) {
+      task = App.Task.createRecord({name: value});
+      task.set('person', person);
+      App.store.commit();
+      this.set('value', '');
+    }
+  }
+});
+
+App.CreateTagView = Em.TextField.extend({
+  placeholder: "Add a tag",
+  insertNewline: function() {
+    var value,
+        person,
+        task;
+
+    value = this.get('value');
+    task = this.get('task');
+
+    if (!!value && !!task) {
+      tag = App.Tag.createRecord({name: value});
+      App.store.commit();
+      Em.get(task, 'tags').pushObject(tag);
       App.store.commit();
       this.set('value', '');
     }
@@ -64,6 +108,50 @@ App.Router = Ember.Router.extend({
     person: Ember.Route.extend({
       route: '/:personName',
 
+      showTask: Ember.Route.transitionTo('task'),
+
+      editPerson: function(router, event) {
+        var newName,
+            person;
+
+        person = router.get('personController.content');
+
+        if (!!person) {
+          newName = prompt("Enter new name");
+          if (!!newName && newName !== "") {
+            // Update a record
+            person.set("name", newName);
+            App.store.commit();
+          }
+        }
+      },
+
+      deletePerson: function(router, event) {
+        var person;
+
+        person = router.get('personController.content');
+
+        if (!!person) {
+          // Delete a record
+          person.deleteRecord();
+          App.store.commit();
+          router.transitionTo('index');
+        }
+      },
+
+      deleteTask: function(router, event) {
+        var task;
+
+        task = event.context;
+
+        if (!!task) {
+          // Delete a record associated to another one (belongsTo)
+          task.deleteRecord();
+          App.store.commit();
+        }
+      },
+
+
       connectOutlets: function(router, context) {
         router.get('applicationController').connectOutlet('person', context);
       },
@@ -75,7 +163,16 @@ App.Router = Ember.Router.extend({
       },
 
       deserialize: function(router, urlParams) {
-        return App.Person.find({name: urlParams.personName});
+        // How do we do this? http://trek.github.com/
+        return App.Person.findQuery({name: urlParams.personName});
+      }
+    }),
+
+    task: Em.Route.extend({
+      route: "/task/:taskId",
+
+      connectOutlets: function(router, context) {
+        router.get("applicationController").connectOutlet('task', context);
       }
     })
   })
@@ -89,8 +186,20 @@ App.store = DS.Store.create({
 
 // Models
 App.Person = DS.Model.extend({
-  name: DS.attr('string')
+  name: DS.attr('string'),
+  tasks: DS.hasMany('App.Task')
 });
+
+App.Task = DS.Model.extend({
+  name: DS.attr('string'),
+  person: DS.belongsTo('App.Person'),
+  tags: DS.hasMany('App.Tags')
+});
+
+App.Tag = DS.Model.extend({
+  name: DS.attr('string'),
+  tasks: DS.hasMany('App.Task')
+})
 
 // Start!
 App.initialize();
