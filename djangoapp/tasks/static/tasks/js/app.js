@@ -180,7 +180,7 @@ App.Router = Ember.Router.extend({
 
 // Ember-data store using the Django Tastypie adapter
 App.store = DS.Store.create({
-  revision: 6,
+  revision: 7,
   adapter: DS.DjangoTastypieAdapter.create()
 });
 
