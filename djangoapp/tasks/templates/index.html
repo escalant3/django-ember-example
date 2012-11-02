@@ -12,7 +12,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="shortcut icon" href="/favicon.ico">
-  <!-- <link rel="stylesheet" href="/static/visits/css/visits.css" /> -->
+  <!-- <link rel="stylesheet" href="/static/tasks/css/tasks.css" /> -->
 
   <!--[if lt IE 9]>
   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -27,7 +27,7 @@
   <script src="https://raw.github.com/escalant3/ember-data-tastypie-adapter/relationship-improvements/tests/lib/ember.js"></script>
   <script src="https://raw.github.com/escalant3/ember-data-tastypie-adapter/relationship-improvements/tests/lib/ember-data.js"></script>
   <!-- <script src="https://raw.github.com/escalant3/ember-data-tastypie-adapter/master/lib/tastypie_adapter.js"></script> -->
-  <script src="/static/visits/js/libs/tastypie_adapter.js"></script>
+  <script src="/static/tasks/js/libs/tastypie_adapter.js"></script>
 
   <script type="text/x-handlebars" data-template-name="application">
     <div class="container">
@@ -81,7 +81,7 @@
     {{ name }}
 
     <h4>Tags</h4>
-    {{view App.CreateTagView task=this}}
+    {{view App.CreateTagView vi=this}}
     <ul>
     {{#each tag in tags}}
       <li>
@@ -93,6 +93,6 @@
 
   </script>
 
-  <script src="static/visits/js/app.js"></script>
+  <script src="static/tasks/js/app.js"></script>
 </body>
 </html>
