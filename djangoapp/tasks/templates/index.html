@@ -24,16 +24,18 @@
   <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/css/bootstrap-combined.min.css" rel="stylesheet">
   <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/js/bootstrap.min.js"></script>
   <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.rc.1/handlebars.min.js"></script>
-  <!-- <script src="https://raw.github.com/escalant3/ember-data-tastypie-adapter/master/lib/tastypie_adapter.js"></script> -->
   <script src="/static/tasks/js/libs/ember.js"></script>
   <script src="/static/tasks/js/libs/ember-data.js"></script>
+  <script src="/static/tasks/js/libs/tastypie_serializer.js"></script>
   <script src="/static/tasks/js/libs/tastypie_adapter.js"></script>
 
   <script type="text/x-handlebars" data-template-name="application">
     <div class="container">
       <div class="row">
-        <div class="span8">
-          <h2>People</h2>
+        <div class="span8 well">
+          <a href="/">
+            <h2>People and tasks</h2>
+          </a>
 
           {{outlet}}
         </div>
@@ -42,13 +44,13 @@
   </script>
 
   <script type="text/x-handlebars" data-template-name="people">
-    <h3>Directory</h3>
+    <h3>People Directory</h3>
     {{view App.CreatePersonView}}
 
     <ul>
     {{#each person in controller}}
       <li>
-        <a {{action showPerson person}}> {{person.name}} </a>
+        <a {{action showPerson person}}> {{person.name}} ({{person.tasks.length}} tasks assigned)</a>
       </li>
     {{/each}}
     </ul>
@@ -72,16 +74,18 @@
       <li>
         <a {{action showTask task}}>{{ task.name }}</a>
         <a {{ action deleteTask task}}><i class="icon-remove"></i></a>
+        {{#each tag in task.tags}}
+          {{ tag.name }}
+        {{/each}}
       </li>
     {{/each}}
     </ul>
   </script>
 
   <script type="text/x-handlebars" data-template-name="task">
-    {{ name }}
+    <h3>{{ name }}</h3>
 
-    <h4>Tags</h4>
-    {{view App.CreateTagView vi=this}}
+    <h5>Tags Assigned</h5>
     <ul>
     {{#each tag in tags}}
       <li>
@@ -90,6 +94,19 @@
       </li>
     {{/each}}
     </ul>
+
+    <h5>Tags Available</h5>
+    {{view App.CreateTagView }}
+
+    <ul class="unstyled">
+    {{#each tag in availableTags}}
+      <li>
+      {{#view App.ToggleTagView contentBinding="tag" taskBinding="this"}}
+        {{ tag.name }}
+      {{/view}}
+      </li>
+    {{/each}}
+    </li>
 
   </script>
 
