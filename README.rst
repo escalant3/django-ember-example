@@ -23,7 +23,7 @@ Installation
 
 Usage
 -----
-The goal of this app is testing several kinds of ember-data synchronization 
+The goal of this app is testing several kinds of ember-data synchronization
 with a Django REST server:
     * Adding new users with the text input commits automatically
     * Editing detail properties keep changes in the store memory till
@@ -34,6 +34,6 @@ Ember.js
 --------
 If you just want to check the ember.js code, check it out at app.js_
 
-.. _DjangoTastypieAdapter: https://github.com/escalant3/data/blob/master/packages/ember-data/lib/adapters/tastypie-adapter.js
+.. _DjangoTastypieAdapter: https://github.com/escalant3/ember-data-tastypie-adapter
 .. _ember-data: https://github.com/emberjs/data
-.. _app.js: https://github.com/escalant3/django-ember-example/blob/master/djangoapp/visits/static/visits/js/app.js
+.. _app.js: https://github.com/escalant3/django-ember-example/blob/master/djangoapp/tasks/static/tasks/js/app.js
