@@ -21,13 +21,7 @@ App.Person = DS.Model.extend({
 
 App.Task = DS.Model.extend({
   name: DS.attr('string'),
-  person: DS.belongsTo('App.Person'),
-  tags: DS.hasMany('App.Tags')
-});
-
-App.Tag = DS.Model.extend({
-  name: DS.attr('string'),
-  task: DS.belongsTo('App.Task')
+  person: DS.belongsTo('App.Person')
 });
 
 // Application root view
@@ -93,33 +87,6 @@ App.CreateTaskView = Em.TextField.extend({
   }
 });
 
-App.ToggleTagView = Em.View.extend({
-  tagName: "span",
-  classNames: ["label", "label-info"],
-  click: function(a, b, c) {
-    var tag,
-        task;
-
-    tag = this.get('content');
-    task = this.get('task');
-
-    Em.get(task, 'tags').pushObject(tag);
-    App.store.commit();
-  }
-});
-
-App.CreateTagView = Em.TextField.extend({
-  placeholder: "Add a new tag",
-  insertNewline: function() {
-    value = this.get('value');
-
-    if (!!value) {
-      App.Tag.createRecord({name: value});
-      App.store.commit();
-      this.set('value', '');
-    }
-  }
-});
 
 // The router is the main component of the application
 App.Router = Ember.Router.extend({
@@ -223,7 +190,9 @@ App.Router = Ember.Router.extend({
 // Ember-data store using the Django Tastypie adapter
 App.store = DS.Store.create({
   revision: 7,
-  adapter: DS.DjangoTastypieAdapter.create()
+  adapter: DS.DjangoTastypieAdapter.create({
+    serverDomain: "http://localhost:8000"
+  })
 });
 
 // Start!

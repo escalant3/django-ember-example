@@ -95,19 +95,6 @@
     {{/each}}
     </ul>
 
-    <h5>Tags Available</h5>
-    {{view App.CreateTagView }}
-
-    <ul class="unstyled">
-    {{#each tag in availableTags}}
-      <li>
-      {{#view App.ToggleTagView contentBinding="tag" taskBinding="this"}}
-        {{ tag.name }}
-      {{/view}}
-      </li>
-    {{/each}}
-    </li>
-
   </script>
 
   <script src="static/tasks/js/app.js"></script>
