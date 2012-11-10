@@ -9,10 +9,10 @@ class Person(models.Model):
 
 
 class Tag(models.Model):
-	name = models.CharField(max_length=30)
+    name = models.CharField(max_length=30)
 
-	def __unicode__(self):
-		return self.name
+    def __unicode__(self):
+        return self.name
 
 
 class Task(models.Model):
