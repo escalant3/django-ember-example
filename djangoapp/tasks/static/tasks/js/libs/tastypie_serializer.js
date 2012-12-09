@@ -1,6 +1,6 @@
 var get = Ember.get, set = Ember.set;
 
-DS.DjangoTastypieSerializer = DS.Serializer.extend({
+DS.DjangoTastypieSerializer = DS.JSONSerializer.extend({
 
 
   getItemUrl: function(meta, id){
@@ -78,6 +78,5 @@ DS.DjangoTastypieSerializer = DS.Serializer.extend({
     }
     return value;
   }
-
 });
 

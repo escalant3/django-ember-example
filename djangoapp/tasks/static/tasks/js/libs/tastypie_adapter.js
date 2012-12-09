@@ -20,6 +20,14 @@ DS.DjangoTastypieAdapter = DS.RESTAdapter.extend({
   bulkCommit: false,
 
   /**
+    Tastypie returns the next URL when all the elements of a type
+    cannot be fetched inside a single request. Unless you override this
+    feature in Tastypie, you don't need to change this value. Pagination
+    will work out of the box for findAll requests
+  */
+  since: 'next',
+
+  /**
     Serializer object to manage JSON transformations
   */
   serializer: DS.DjangoTastypieSerializer,
@@ -48,7 +56,7 @@ DS.DjangoTastypieAdapter = DS.RESTAdapter.extend({
     var data,
         root = this.rootForType(type);
 
-    data = record.toData();
+    data = record.serialize();
 
     this.ajax(this.buildURL(root), "POST", {
       data: data,
@@ -69,7 +77,7 @@ DS.DjangoTastypieAdapter = DS.RESTAdapter.extend({
     id = Em.get(record, 'id');
     root = this.rootForType(type);
 
-    data = record.toData();
+    data = record.serialize();
 
     this.ajax(this.buildURL(root, id), "PUT", {
       data: data,
@@ -126,7 +134,7 @@ DS.DjangoTastypieAdapter = DS.RESTAdapter.extend({
     var url,
         root = this.rootForType(type);
 
-    ids = get(this, 'serializer').serializeIds(ids);
+    ids = this.serializeIds(ids);
 
     // FindMany array through subset of resources
     if (ids instanceof Array) {
@@ -177,6 +185,30 @@ DS.DjangoTastypieAdapter = DS.RESTAdapter.extend({
     }
 
     return url;
+  },
+
+  /**
+     The actual nextUrl is being stored. The offset must be extracted from
+     the string to do a new call.
+     When there are remaining objects to be returned, Tastypie returns a
+     `next` URL that in the meta header. Whenever there are no
+     more objects to be returned, the `next` paramater value will be null.
+     Instead of calculating the next `offset` each time, we store the nextUrl
+     from which the offset will be extrated for the next request
+  */
+  sinceQuery: function(since) {
+    var offsetParam,
+        query;
+
+    query = {};
+
+    if (!!since) {
+      offsetParam = since.match(/offset=(\d+)/);
+      offsetParam = (!!offsetParam && !!offsetParam[1]) ? offsetParam[1] : null;
+      query.offset = offsetParam;
+    }
+
+    return offsetParam ? query : null;
   },
 
   removeTrailingSlash: function(url) {
