@@ -77,7 +77,7 @@
     <ul>
     {{#each task in tasks}}
       <li>
-        <a {{action showTask task}}>{{ task.name }}</a>
+        {{#linkTo "task" task}} {{ task.name }} {{/linkTo}}
         <a {{ action deleteTask task}}><i class="icon-remove"></i></a>
         {{#each tag in task.tags}}
           {{ tag.name }}

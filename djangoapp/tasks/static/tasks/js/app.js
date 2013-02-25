@@ -31,7 +31,7 @@ App.TaskView = Ember.View.extend({
   init: function() {
     this._super();
 
-    Em.set(this, 'context.availableTags', App.Tag.find());
+    //Em.set(this, 'context.availableTags', App.Tag.find());
   }
 });
 
@@ -71,6 +71,7 @@ App.CreateTaskView = Em.TextField.extend({
 App.Router.map(function() {
   this.resource('people');
   this.resource('person', { path: '/people/:person_id' });
+  this.resource('task', { path: '/tasks/:task_id' });
 });
 
 App.IndexRoute = Ember.Route.extend({
@@ -86,7 +87,7 @@ App.PeopleRoute = Ember.Route.extend({
 });
 
 
-App.PersonController = Ember.ObjectController.extend({
+App.PersonController = Ember.ObjectController.extend({    
 	editPerson: function(person) {
 	    if (!!person) {
 	      newName = prompt("Enter new name");
@@ -113,7 +114,7 @@ App.PersonController = Ember.ObjectController.extend({
           task.deleteRecord();
           App.store.commit();
         }
-      },
+      }
 	
 });
 
