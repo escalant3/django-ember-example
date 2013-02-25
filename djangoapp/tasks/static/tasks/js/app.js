@@ -24,25 +24,6 @@ App.Task = DS.Model.extend({
   person: DS.belongsTo('App.Person')
 });
 
-// Application root view
-App.ApplicationView = Ember.View.extend({
-  templateName: 'application'
-});
-
-// Application main controller (main view rendering context)
-App.ApplicationController = Ember.Controller.extend();
-
-// People controller and view
-App.PeopleController = Ember.ArrayController.extend();
-App.PeopleView = Ember.View.extend({
-  templateName: 'people'
-});
-
-// Person controller and view
-App.PersonView = Ember.View.extend({
-  templateName: 'person'
-});
-App.PersonController = Ember.ObjectController.extend();
 
 // Task controller and view
 App.TaskView = Ember.View.extend({
@@ -53,8 +34,7 @@ App.TaskView = Ember.View.extend({
     Em.set(this, 'context.availableTags', App.Tag.find());
   }
 });
-App.TaskController = Ember.ObjectController.extend({
-});
+
 
 // Create new person view
 App.CreatePersonView = Em.TextField.extend({
@@ -87,109 +67,59 @@ App.CreateTaskView = Em.TextField.extend({
   }
 });
 
+// Router
+App.Router.map(function() {
+  this.resource('people');
+  this.resource('person', { path: '/people/:person_id' });
+});
 
-// The router is the main component of the application
-App.Router = Ember.Router.extend({
-  enableLogging: true,
+App.IndexRoute = Ember.Route.extend({
+  redirect: function() {
+    this.transitionTo('people');
+  }
+});
 
-  root: Ember.Route.extend({
-    index: Ember.Route.extend({
-      route: '/',
+App.PeopleRoute = Ember.Route.extend({
+  model: function() {
+    return App.Person.find();
+  }
+});
 
-      showPerson: Ember.Route.transitionTo('person'),
 
-      connectOutlets: function(router) {
-        router.get('applicationController').connectOutlet('people', App.Person.find());
-      }
-    }),
-
-    person: Ember.Route.extend({
-      route: '/person/:personId',
-
-      showTask: Ember.Route.transitionTo('task'),
-
-      editPerson: function(router, event) {
-        var newName,
-            person;
-
-        person = router.get('personController.content');
-
-        if (!!person) {
-          newName = prompt("Enter new name");
-          if (!!newName && newName !== "") {
-            // Update a record
-            person.set("name", newName);
-            App.store.commit();
-          }
-        }
-      },
-
-      deletePerson: function(router, event) {
-        var person;
-
-        person = router.get('personController.content');
-
+App.PersonController = Ember.ObjectController.extend({
+	editPerson: function(person) {
+	    if (!!person) {
+	      newName = prompt("Enter new name");
+	      if (!!newName && newName !== "") {
+	        // Update a record
+	        person.set("name", newName);
+	        App.store.commit();
+	      }
+	    }
+	 },
+     
+	deletePerson: function(person) {
         if (!!person) {
           // Delete a record
           person.deleteRecord();
           App.store.commit();
-          router.transitionTo('index');
+          this.transitionToRoute('people');
         }
-      },
-
-      deleteTask: function(router, event) {
-        var task;
-
-        task = event.context;
-
+    },
+    
+    deleteTask: function(task) {
         if (!!task) {
           // Delete a record associated to another one (belongsTo)
           task.deleteRecord();
           App.store.commit();
         }
       },
-
-
-      connectOutlets: function(router, context) {
-        router.get('applicationController').connectOutlet('person', context);
-      },
-
-      serialize: function(router, context){
-        return {
-          personId: context.get('id')
-        };
-      },
-
-      deserialize: function(router, urlParams) {
-        return App.Person.find(urlParams.personId);
-      }
-    }),
-
-    task: Em.Route.extend({
-      route: "/task/:taskId",
-
-      backToPerson: Ember.Route.transitionTo('person'),
-
-      connectOutlets: function(router, context) {
-        router.get("applicationController").connectOutlet('task', context);
-      },
-
-      serialize: function(router, context) {
-        return {
-          taskId: context.get('id')
-        };
-      },
-
-      deserialize: function(router, urlParams) {
-        return App.Task.find(urlParams.taskId);
-      }
-    })
-  })
+	
 });
 
 // Ember-data store using the Django Tastypie adapter
 App.store = DS.Store.create({
-  revision: 10,
+  revision: 11,
   adapter: DS.DjangoTastypieAdapter.extend()
 });
 

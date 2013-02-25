@@ -20,10 +20,10 @@
 </head>
 <body>
 
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/css/bootstrap-combined.min.css" rel="stylesheet">
   <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/js/bootstrap.min.js"></script>
-  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.rc.1/handlebars.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0-rc.3/handlebars.min.js"></script>
   <script src="/static/tasks/js/libs/ember.js"></script>
   <script src="/static/tasks/js/libs/ember-data.js"></script>
   <script src="/static/tasks/js/libs/tastypie_serializer.js"></script>
@@ -50,7 +50,7 @@
     <ul>
     {{#each person in controller}}
       <li>
-        <a {{action showPerson person}}> {{person.name}} ({{person.tasks.length}} tasks assigned)</a>
+      	{{#linkTo "person" person}} {{person.name}} ({{person.tasks.length}} tasks assigned) {{/linkTo}}
       </li>
     {{/each}}
     </ul>
@@ -61,14 +61,19 @@
     <h3>{{ name }}</h3>
     <ul class="unstyled">
       <li>
-        <a {{action editPerson}}><i class="icon-pencil"></i>Edit name</a>
+        <a {{action editPerson this}}><i class="icon-pencil"></i>Edit name</a>
       </li>
       <li>
-        <a {{action deletePerson}}><i class="icon-remove"></i>Delete</a>
+        <a {{action deletePerson this}}><i class="icon-remove"></i>Delete</a>
       </li>
     </ul>
     <h4>Tasks</h4>
-    {{view App.CreateTaskView person=this}}
+    	{{partial tasks}}
+    </ul>
+  </script>
+  
+  <script type="text/x-handlebars" data-template-name="_tasks">
+  	{{view App.CreateTaskView personBinding=this}}
     <ul>
     {{#each task in tasks}}
       <li>
@@ -79,7 +84,6 @@
         {{/each}}
       </li>
     {{/each}}
-    </ul>
   </script>
 
   <script type="text/x-handlebars" data-template-name="task">
