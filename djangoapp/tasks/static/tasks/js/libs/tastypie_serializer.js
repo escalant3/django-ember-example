@@ -20,9 +20,12 @@ DS.DjangoTastypieSerializer = DS.JSONSerializer.extend({
     Transforms the association fields to Resource URI django-tastypie format
   */
   addBelongsTo: function(hash, record, key, relationship) {
-    var id = get(record, relationship.key+'.id');
+    var id,
+        related = get(record, relationship.key);
 
-    if (!Ember.none(id)) { hash[key] = this.getItemUrl(relationship, id); }
+    id = get(related, this.primaryKey(related));
+
+    if (!Ember.isNone(id)) { hash[key] = this.getItemUrl(relationship, id); }
   },
 
   addHasMany: function(hash, record, key, relationship) {
@@ -43,40 +46,92 @@ DS.DjangoTastypieSerializer = DS.JSONSerializer.extend({
   },
 
   /**
+    Tastypie adapter does not support the sideloading feature
+    */
+  extract: function(loader, json, type, record) {
+    this.extractMeta(loader, type, json);
+    this.sideload(loader, type, json);
+
+    if (json) {
+      if (record) { loader.updateId(record, json); }
+      this.extractRecordRepresentation(loader, type, json);
+    }
+  },
+
+  extractMany: function(loader, json, type, records) {
+    this.sideload(loader, type, json);
+    this.extractMeta(loader, type, json);
+
+    if (json.objects) {
+      var objects = json.objects, references = [];
+      if (records) { records = records.toArray(); }
+
+      for (var i = 0; i < objects.length; i++) {
+        if (records) { loader.updateId(records[i], objects[i]); }
+        var reference = this.extractRecordRepresentation(loader, type, objects[i]);
+        references.push(reference);
+      }
+
+      loader.populateArray(references);
+    }
+  },
+
+  extractMeta: function(loader, type, json) {
+    var meta = json.meta,
+      since = this.extractSince(meta);
+
+    // this registers the id with the store, so it will be passed
+    // into the next call to `findAll`
+    if (since) { loader.sinceForType(type, since); }
+  },
+
+  extractSince: function(meta) {
+    if (meta) {
+      return meta.next;
+    }
+  },
+  /**
+   Tastypie default does not support sideloading
+   */
+  sideload: function(loader, type, json, root) {
+
+  },
+
+  /**
     ASSOCIATIONS: DESERIALIZATION
     Transforms the association fields from Resource URI django-tastypie format
   */
   _deurlify: function(value) {
-    if (!!value) {
+    if (typeof value === "string") {
       return value.split('/').reverse()[1];
+    } else {
+      return value;
     }
   },
 
-  extractHasMany: function(record, hash, relationship) {
+  extractHasMany: function(type, hash, key) {
     var value,
-        self = this,
-        key = this.keyForHasMany(record, relationship);
+      self = this;
 
     value = hash[key];
 
     if (!!value) {
       value.forEach(function(item, i, collection) {
-        collection[i] = (relationship.embedded) ? item : self._deurlify(item);
+        collection[i] = self._deurlify(item);
       });
     }
 
     return value;
   },
 
-  extractBelongsTo: function(record, hash, relationship) {
-    var value,
-        key = this._keyForBelongsTo(record.constructor, relationship.key);
+  extractBelongsTo: function(type, hash, key) {
+    var value = hash[key];
 
-    value = hash[key];
     if (!!value) {
-      value = (relationship.options.embedded) ? value : this._deurlify(value);
+      value = this._deurlify(value);
     }
     return value;
   }
+
 });
 
