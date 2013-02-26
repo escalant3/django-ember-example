@@ -89,32 +89,32 @@ App.PeopleRoute = Ember.Route.extend({
 
 App.PersonController = Ember.ObjectController.extend({
   editPerson: function(person) {
-      if (!!person) {
-        newName = prompt("Enter new name");
-        if (!!newName && newName !== "") {
-          // Update a record
-          person.set("name", newName);
-          App.store.commit();
-        }
+    if (!!person) {
+      newName = prompt("Enter new name");
+      if (!!newName && newName !== "") {
+        // Update a record
+        person.set("name", newName);
+        App.store.commit();
       }
-   },
+    }
+  },
 
   deletePerson: function(person) {
-        if (!!person) {
-          // Delete a record
-          person.deleteRecord();
-          App.store.commit();
-          this.transitionToRoute('people');
-        }
-    },
-
-    deleteTask: function(task) {
-        if (!!task) {
-          // Delete a record associated to another one (belongsTo)
-          task.deleteRecord();
-          App.store.commit();
-        }
+    if (!!person) {
+      // Delete a record
+      person.deleteRecord();
+      App.store.commit();
+      this.transitionToRoute('people');
       }
+  },
+
+  deleteTask: function(task) {
+    if (!!task) {
+      // Delete a record associated to another one (belongsTo)
+      task.deleteRecord();
+      App.store.commit();
+    }
+  }
 
 });
 
