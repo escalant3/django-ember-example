@@ -50,7 +50,7 @@
     <ul>
     {{#each person in controller}}
       <li>
-      	{{#linkTo "person" person}} {{person.name}} ({{person.tasks.length}} tasks assigned) {{/linkTo}}
+        {{#linkTo "person" person}} {{person.name}} ({{person.tasks.length}} tasks assigned) {{/linkTo}}
       </li>
     {{/each}}
     </ul>
@@ -68,12 +68,12 @@
       </li>
     </ul>
     <h4>Tasks</h4>
-    	{{partial tasks}}
+      {{partial tasks}}
     </ul>
   </script>
-  
+
   <script type="text/x-handlebars" data-template-name="_tasks">
-  	{{view App.CreateTaskView personBinding=this}}
+    {{view App.CreateTaskView personBinding=this}}
     <ul>
     {{#each task in tasks}}
       <li>
