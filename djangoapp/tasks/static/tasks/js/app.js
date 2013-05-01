@@ -60,7 +60,7 @@ App.CreateTaskView = Em.TextField.extend({
     person = this.get('person');
     if (!!value && !!person) {
       task = App.Task.createRecord({name: value});
-      task.set('person', person);
+      task.set('person', person.get('model'));
       App.store.commit();
       this.set('value', '');
     }
@@ -120,7 +120,7 @@ App.PersonController = Ember.ObjectController.extend({
 
 // Ember-data store using the Django Tastypie adapter
 App.store = DS.Store.create({
-  revision: 11,
+  revision: 12,
   adapter: DS.DjangoTastypieAdapter.extend()
 });
 
