@@ -167,7 +167,7 @@ DS.DjangoTastypieSerializer = DS.RESTSerializer.extend({
 
   extractSingle: function(store, primaryType, payload, recordId, requestType) {
     var newPayload = {};
-    newPayload[type.typeKey] = payload;
+    newPayload[primaryType.typeKey] = payload;
 
     return this._super(store, primaryType, newPayload, recordId, requestType);
   },
