@@ -158,68 +158,18 @@ DS.DjangoTastypieSerializer = DS.RESTSerializer.extend({
     }, this);
   },
 
-  normalizePayload: function(type, payload) {
-    payload[type.typeKey] = payload.objects;
+  extractArray: function(store, primaryType, payload) {
+    payload[primaryType.typeKey] = payload.objects;
     delete payload.objects;
-    return payload;
+
+    return this._super(store, primaryType, payload);
   },
 
-  normalizePayloadSingle: function(type, payload) {
+  extractSingle: function(store, primaryType, payload, recordId, requestType) {
     var newPayload = {};
     newPayload[type.typeKey] = payload;
-    return newPayload;
-  },
 
-  /**
-   * The only diference in this method with the official one is calling to
-   * normalizePayloadSingle.
-   * TODO Send a PR to ember-data to include a normalizePayloadSingle that
-   * by default is an alias to normalizePayload
-   */
-  extractSingle: function(store, primaryType, payload, recordId, requestType) {
-    payload = this.normalizePayloadSingle(primaryType, payload);
-
-    var primaryTypeName = primaryType.typeKey,
-        primaryRecord;
-
-    for (var prop in payload) {
-      var typeName  = this.typeForRoot(prop),
-          isPrimary = typeName === primaryTypeName;
-
-      // legacy support for singular resources
-      if (isPrimary && Ember.typeOf(payload[prop]) !== "array" ) {
-        primaryRecord = this.normalize(primaryType, payload[prop], prop);
-        continue;
-      }
-
-      var type = store.modelFor(typeName);
-
-      /*jshint loopfunc:true*/
-      forEach.call(payload[prop], function(hash) {
-        var typeName = this.typeForRoot(prop),
-            type = store.modelFor(typeName),
-            typeSerializer = store.serializerFor(type);
-
-        hash = typeSerializer.normalize(type, hash, prop);
-
-        var isFirstCreatedRecord = isPrimary && !recordId && !primaryRecord,
-            isUpdatedRecord = isPrimary && coerceId(hash.id) === recordId;
-
-        // find the primary record.
-        //
-        // It's either:
-        // * the record with the same ID as the original request
-        // * in the case of a newly created record that didn't have an ID, the first
-        //   record in the Array
-        if (isFirstCreatedRecord || isUpdatedRecord) {
-          primaryRecord = hash;
-        } else {
-          store.push(typeName, hash);
-        }
-      }, this);
-    }
-
-    return primaryRecord;
+    return this._super(store, primaryType, newPayload, recordId, requestType);
   },
 
   relationshipToResourceUri: function (relationship, value){

@@ -25,28 +25,6 @@ App.Task = DS.Model.extend({
 });
 
 
-// Task controller and view
-App.TaskView = Ember.View.extend({
-  templateName: 'task',
-  init: function() {
-    this._super();
-  }
-});
-
-
-// Create new person view
-App.CreatePersonView = Em.TextField.extend({
-  placeholder: "Add new people",
-  insertNewline: function() {
-    var value = this.get('value');
-    if (value) {
-      App.Person.createRecord({name: value});
-      App.store.commit();
-      this.set('value', '');
-    }
-  }
-});
-
 // Router
 App.Router.map(function() {
   this.resource('people');
