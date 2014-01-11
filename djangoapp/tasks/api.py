@@ -7,7 +7,7 @@ from tasks.models import Person, Task
 
 class PersonResource(ModelResource):
 
-    task_ids = fields.ToManyField('tasks.api.TaskResource', 'task_set', null=True)
+    tasks = fields.ToManyField('tasks.api.TaskResource', 'task_set', null=True)
 
     class Meta:
         queryset = Person.objects.all()
@@ -28,7 +28,7 @@ class PersonResource(ModelResource):
 
 class TaskResource(ModelResource):
 
-    person_id = fields.ToOneField(PersonResource, 'person', null=True)
+    person = fields.ToOneField(PersonResource, 'person', null=True)
 
     class Meta:
         queryset = Task.objects.all()

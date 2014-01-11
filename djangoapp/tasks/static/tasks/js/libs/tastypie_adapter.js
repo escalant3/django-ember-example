@@ -1,5 +1,10 @@
 var get = Ember.get, set = Ember.set;
 
+function rejectionHandler(reason) {
+  Ember.Logger.error(reason, reason.message);
+  throw reason;
+}
+
 DS.DjangoTastypieAdapter = DS.RESTAdapter.extend({
   /**
     Set this parameter if you are planning to do cross-site
@@ -30,101 +35,7 @@ DS.DjangoTastypieAdapter = DS.RESTAdapter.extend({
   /**
     Serializer object to manage JSON transformations
   */
-  serializer: DS.DjangoTastypieSerializer,
-
-  init: function() {
-    var serializer,
-        namespace;
-
-    this._super();
-
-    namespace = get(this, 'namespace');
-    Em.assert("tastypie namespace parameter is mandatory.", !!namespace);
-
-    // Make the adapter available for the serializer
-    serializer = get(this, 'serializer');
-    set(serializer, 'adapter', this);
-    set(serializer, 'namespace', namespace);
-  },
-
-
-  /**
-    Create a record in the Django server. POST actions must
-    be enabled in the Resource
-  */
-  createRecord: function(store, type, record) {
-    var data,
-        root = this.rootForType(type);
-
-    data = record.serialize();
-
-    this.ajax(this.buildURL(root), "POST", {
-      data: data,
-      success: function(json) {
-        this.didCreateRecord(store, type, record, json);
-      }
-    });
-  },
-
-  /**
-    Edit a record in the Django server. PUT actions must
-    be enabled in the Resource
-  */
-  updateRecord: function(store, type, record) {
-    var id,
-        data;
-
-    id = Em.get(record, 'id');
-    root = this.rootForType(type);
-
-    data = record.serialize();
-
-    this.ajax(this.buildURL(root, id), "PUT", {
-      data: data,
-      success: function(json) {
-        this.didSaveRecord(store, type, record, json);
-      }
-    });
-  },
-
-  /**
-    Delete a record in the Django server. DELETE actions
-    must be enabled in the Resource
-  */
-  deleteRecord: function(store, type, record) {
-    var id,
-        root;
-
-    id = get(record, 'id');
-    root = this.rootForType(type);
-
-    this.ajax(this.buildURL(root, id), "DELETE", {
-      success: function(json) {
-        this.didSaveRecord(store, type, record, json);
-      }
-    });
-  },
-
-  findMany: function(store, type, ids) {
-    var url,
-        root = this.rootForType(type);
-
-    ids = this.serializeIds(ids);
-
-    // FindMany array through subset of resources
-    if (ids instanceof Array) {
-      ids = "set/" + ids.join(";") + '/';
-    }
-
-    url = this.buildURL(root);
-    url += ids;
-
-    this.ajax(url, "GET", {
-      success: function(json) {
-        this.didFindMany(store, type, json);
-      }
-    });
-  },
+  defaultSerializer: '_djangoTastypie',
 
   buildURL: function(record, suffix) {
     var url = this._super(record, suffix);
@@ -176,7 +87,7 @@ DS.DjangoTastypieAdapter = DS.RESTAdapter.extend({
   /**
     django-tastypie does not pluralize names for lists
   */
-  pluralize: function(name) {
-    return name;
+  pathForType: function(type) {
+    return type;
   }
 });

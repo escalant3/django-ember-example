@@ -45,14 +45,18 @@
 
   <script type="text/x-handlebars" data-template-name="people">
     <h3>People Directory</h3>
-    {{view App.CreatePersonView}}
+    {{input action="createPerson" value=newPerson placeholder="New person"}}
 
     <ul>
     {{#each person in controller}}
       <li>
-        {{#linkTo "person" person}} {{person.name}} ({{person.tasks.length}} tasks assigned) {{/linkTo}}
+        {{#link-to "person" person}} {{person.name}} ({{person.tasks.length}} tasks assigned) {{/link-to}}
       </li>
     {{/each}}
+
+    {{#if paginationInfo}}
+      {{ paginationInfo }}
+    {{/if}}
     </ul>
 
   </script>
@@ -68,16 +72,17 @@
       </li>
     </ul>
     <h4>Tasks</h4>
-      {{partial tasks}}
+      {{partial "tasks"}}
     </ul>
   </script>
 
   <script type="text/x-handlebars" data-template-name="_tasks">
-    {{view App.CreateTaskView personBinding=this}}
+    {{input action="createTask" value=newTask placeholder="New task"}}
+
     <ul>
     {{#each task in tasks}}
       <li>
-        {{#linkTo "task" task}} {{ task.name }} {{/linkTo}}
+        {{#link-to "task" task}} {{ task.name }} {{/link-to}}
         <a {{ action deleteTask task}}><i class="icon-remove"></i></a>
         {{#each tag in task.tags}}
           {{ tag.name }}
