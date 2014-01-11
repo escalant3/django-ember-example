@@ -1,5 +1,10 @@
 var get = Ember.get, set = Ember.set;
 
+function rejectionHandler(reason) {
+  Ember.Logger.error(reason, reason.message);
+  throw reason;
+}
+
 DS.DjangoTastypieAdapter = DS.RESTAdapter.extend({
   /**
     Set this parameter if you are planning to do cross-site
@@ -30,23 +35,7 @@ DS.DjangoTastypieAdapter = DS.RESTAdapter.extend({
   /**
     Serializer object to manage JSON transformations
   */
-  serializer: DS.DjangoTastypieSerializer,
-
-  init: function() {
-    var serializer,
-        namespace;
-
-    this._super();
-
-    namespace = get(this, 'namespace');
-    Em.assert("tastypie namespace parameter is mandatory.", !!namespace);
-
-    // Make the adapter available for the serializer
-    serializer = get(this, 'serializer');
-    set(serializer, 'adapter', this);
-    set(serializer, 'namespace', namespace);
-  },
-
+  defaultSerializer: '_djangoTastypie',
 
   /**
     Create a record in the Django server. POST actions must
@@ -54,16 +43,19 @@ DS.DjangoTastypieAdapter = DS.RESTAdapter.extend({
   */
   createRecord: function(store, type, record) {
     var data,
-        root = this.rootForType(type);
+        root = this.rootForType(type),
+        adapter = this;
 
     data = record.serialize();
 
-    this.ajax(this.buildURL(root), "POST", {
-      data: data,
-      success: function(json) {
-        this.didCreateRecord(store, type, record, json);
-      }
-    });
+    return this.ajax(this.buildURL(root), "POST", {
+      data: data
+    }).then(function(json){
+      adapter.didCreateRecord(store, type, record, json);
+    }, function(xhr) {
+      adapter.didError(store, type, record, xhr);
+      throw xhr;
+    }).then(null, rejectionHandler);
   },
 
   /**
@@ -71,20 +63,21 @@ DS.DjangoTastypieAdapter = DS.RESTAdapter.extend({
     be enabled in the Resource
   */
   updateRecord: function(store, type, record) {
-    var id,
-        data;
+    var id, data,
+        root = this.rootForType(type),
+        adapter = this;
 
-    id = Em.get(record, 'id');
-    root = this.rootForType(type);
-
+    id = get(record, 'id');
     data = record.serialize();
 
-    this.ajax(this.buildURL(root, id), "PUT", {
-      data: data,
-      success: function(json) {
-        this.didSaveRecord(store, type, record, json);
-      }
-    });
+    return this.ajax(this.buildURL(root, id), "PUT",{
+      data: data
+    }).then(function(json){
+      adapter.didUpdateRecord(store, type, record, json);
+    }, function(xhr) {
+      adapter.didError(store, type, record, xhr);
+      throw xhr;
+    }).then(null, rejectionHandler);
   },
 
   /**
@@ -93,21 +86,23 @@ DS.DjangoTastypieAdapter = DS.RESTAdapter.extend({
   */
   deleteRecord: function(store, type, record) {
     var id,
-        root;
+        root = this.rootForType(type),
+        adapter = this;
 
     id = get(record, 'id');
-    root = this.rootForType(type);
 
-    this.ajax(this.buildURL(root, id), "DELETE", {
-      success: function(json) {
-        this.didSaveRecord(store, type, record, json);
-      }
-    });
+    return this.ajax(this.buildURL(root, id), "DELETE").then(function(json){
+      adapter.didDeleteRecord(store, type, record, json);
+    }, function(xhr){
+      adapter.didError(store, type, record, xhr);
+      throw xhr;
+    }).then(null, rejectionHandler);
   },
 
   findMany: function(store, type, ids) {
     var url,
-        root = this.rootForType(type);
+        root = this.rootForType(type),
+        adapter = this;
 
     ids = this.serializeIds(ids);
 
@@ -124,6 +119,10 @@ DS.DjangoTastypieAdapter = DS.RESTAdapter.extend({
         this.didFindMany(store, type, json);
       }
     });
+    return this.ajax(url, "GET", {
+    }).then(function(json) {
+      adapter.didFindMany(store, type, json);
+    }).then(null, rejectionHandler);
   },
 
   buildURL: function(record, suffix) {
@@ -176,7 +175,7 @@ DS.DjangoTastypieAdapter = DS.RESTAdapter.extend({
   /**
     django-tastypie does not pluralize names for lists
   */
-  pluralize: function(name) {
-    return name;
+  pathForType: function(type) {
+    return type;
   }
 });

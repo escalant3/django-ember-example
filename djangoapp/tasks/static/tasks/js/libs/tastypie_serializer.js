@@ -1,7 +1,16 @@
 var get = Ember.get, set = Ember.set;
 
-DS.DjangoTastypieSerializer = DS.JSONSerializer.extend({
+DS.DjangoTastypieSerializer = DS.RESTSerializer.extend({
 
+  init: function() {
+    this._super();
+
+    /* TODO
+    this.configure({
+      meta: 'meta',
+      since: 'next'
+    });*/
+  },
 
   getItemUrl: function(meta, id){
     var url;
@@ -21,25 +30,38 @@ DS.DjangoTastypieSerializer = DS.JSONSerializer.extend({
   */
   addBelongsTo: function(hash, record, key, relationship) {
     var id,
-        related = get(record, relationship.key);
+        related = get(record, relationship.key),
+        embedded = this.embeddedType(record.constructor, key);
 
-    id = get(related, this.primaryKey(related));
+    if (embedded === 'always') {
+      hash[key] = related.serialize();
 
-    if (!Ember.isNone(id)) { hash[key] = this.getItemUrl(relationship, id); }
+    } else {
+      id = get(related, this.primaryKey(related));
+
+      if (!Ember.isNone(id)) { hash[key] = this.getItemUrl(relationship, id); }
+    }
   },
 
   addHasMany: function(hash, record, key, relationship) {
     var self = this,
         serializedValues = [],
-        id = null;
+        id = null,
+        embedded = this.embeddedType(record.constructor, key);
 
     key = this.keyForHasMany(relationship.type, key);
 
     value = record.get(key) || [];
 
     value.forEach(function(item) {
-      id = get(item, self.primaryKey(item));
-      serializedValues.push(self.getItemUrl(relationship, id));
+      if (embedded === 'always') {
+        serializedValues.push(item.serialize());
+      } else {
+        id = get(item, self.primaryKey(item));
+        if (!Ember.isNone(id)) {
+          serializedValues.push(self.getItemUrl(relationship, id));
+        }
+      }
     });
 
     hash[key] = serializedValues;
@@ -48,14 +70,11 @@ DS.DjangoTastypieSerializer = DS.JSONSerializer.extend({
   /**
     Tastypie adapter does not support the sideloading feature
     */
-  extract: function(loader, json, type, record) {
-    this.extractMeta(loader, type, json);
-    this.sideload(loader, type, json);
+  extract: function(store, type, payload, id, requestType) {
+    this.extractMeta(store, type, payload);
 
-    if (json) {
-      if (record) { loader.updateId(record, json); }
-      this.extractRecordRepresentation(loader, type, json);
-    }
+    var specificExtract = "extract" + requestType.charAt(0).toUpperCase() + requestType.substr(1);
+    return this[specificExtract](store, type, payload, id, requestType);
   },
 
   extractMany: function(loader, json, type, records) {
@@ -76,20 +95,22 @@ DS.DjangoTastypieSerializer = DS.JSONSerializer.extend({
     }
   },
 
+/* TODO
   extractMeta: function(loader, type, json) {
-    var meta = json.meta,
-      since = this.extractSince(meta);
+    var meta = this.configOption(type, 'meta'),
+        data = json, value;
 
-    // this registers the id with the store, so it will be passed
-    // into the next call to `findAll`
-    if (since) { loader.sinceForType(type, since); }
-  },
-
-  extractSince: function(meta) {
-    if (meta) {
-      return meta.next;
+    if(meta && json[meta]){
+      data = json[meta];
     }
+
+    this.metadataMapping.forEach(function(property, key){
+      if(value = data[property]){
+        loader.metaForType(type, key, value);
+      }
+    });
   },
+*/
   /**
    Tastypie default does not support sideloading
    */
@@ -131,6 +152,29 @@ DS.DjangoTastypieSerializer = DS.JSONSerializer.extend({
       value = this._deurlify(value);
     }
     return value;
+  },
+/*
+  normalizeId: function(hash) {
+    console.log("id");
+  },
+
+  normalizeUsingDeclaredMapping: function(type, hash) {
+    console.log("declared");
+  },
+
+  normalizeAttributes: function(type, hash) {
+    console.log("attributes");
+  },
+
+  normalizeRelationships: function(type, hash) {
+    console.log("relationships");
+  },
+*/
+  normalizePayload: function(type, payload) {
+    console.log("Payload", type, payload);
+    payload.people = payload.objects;
+    delete payload.objects;
+    return payload;
   }
 
 });

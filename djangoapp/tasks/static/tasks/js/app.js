@@ -16,12 +16,12 @@ var App = Ember.Application.create();
 // Models
 App.Person = DS.Model.extend({
   name: DS.attr('string'),
-  tasks: DS.hasMany('App.Task')
+  tasks: DS.hasMany('task')
 });
 
 App.Task = DS.Model.extend({
   name: DS.attr('string'),
-  person: DS.belongsTo('App.Person')
+  person: DS.belongsTo('person')
 });
 
 
@@ -82,7 +82,7 @@ App.IndexRoute = Ember.Route.extend({
 
 App.PeopleRoute = Ember.Route.extend({
   model: function() {
-    return App.Person.find();
+    return this.store.find('person');
   }
 });
 
@@ -119,10 +119,10 @@ App.PersonController = Ember.ObjectController.extend({
 });
 
 // Ember-data store using the Django Tastypie adapter
-App.store = DS.Store.create({
-  revision: 12,
-  adapter: DS.DjangoTastypieAdapter.extend()
+App.ApplicationAdapter = DS.DjangoTastypieAdapter.extend({
+  namespace: 'api/v1'
 });
 
-// Start!
-App.initialize();
+App.ApplicationSerializer = DS.DjangoTastypieSerializer.extend({
+});
+

@@ -50,7 +50,7 @@
     <ul>
     {{#each person in controller}}
       <li>
-        {{#linkTo "person" person}} {{person.name}} ({{person.tasks.length}} tasks assigned) {{/linkTo}}
+        {{#link-to "person" person}} {{person.name}} ({{person.tasks.length}} tasks assigned) {{/link-to}}
       </li>
     {{/each}}
     </ul>
@@ -77,7 +77,7 @@
     <ul>
     {{#each task in tasks}}
       <li>
-        {{#linkTo "task" task}} {{ task.name }} {{/linkTo}}
+        {{#link-to "task" task}} {{ task.name }} {{/link-to}}
         <a {{ action deleteTask task}}><i class="icon-remove"></i></a>
         {{#each tag in task.tags}}
           {{ tag.name }}
