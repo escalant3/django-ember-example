@@ -53,6 +53,10 @@
         {{#link-to "person" person}} {{person.name}} ({{person.tasks.length}} tasks assigned) {{/link-to}}
       </li>
     {{/each}}
+
+    {{#if paginationInfo}}
+      {{ paginationInfo }}
+    {{/if}}
     </ul>
 
   </script>

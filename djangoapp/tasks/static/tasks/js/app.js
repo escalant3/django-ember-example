@@ -63,6 +63,16 @@ App.IndexRoute = Ember.Route.extend({
 App.PeopleRoute = Ember.Route.extend({
   model: function() {
     return this.store.find('person');
+  },
+  setupController: function(controller, model) {
+    var metadata = this.store.metadataFor('person');
+    controller.set('model', model);
+
+    // Show pagination if available
+    if (model.get('length') < metadata.total_count) {
+      controller.set('paginationInfo',
+                     "Showing %@ of %@ people".fmt(model.get('length'), metadata.total_count));
+    }
   }
 });
 

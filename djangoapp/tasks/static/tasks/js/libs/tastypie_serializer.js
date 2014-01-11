@@ -2,16 +2,6 @@ var get = Ember.get, set = Ember.set;
 
 DS.DjangoTastypieSerializer = DS.RESTSerializer.extend({
 
-  init: function() {
-    this._super();
-
-    /* TODO
-    this.configure({
-      meta: 'meta',
-      since: 'next'
-    });*/
-  },
-
   getItemUrl: function(meta, id){
     var url;
 
@@ -96,22 +86,6 @@ DS.DjangoTastypieSerializer = DS.RESTSerializer.extend({
     }
   },
 
-/* TODO
-  extractMeta: function(loader, type, json) {
-    var meta = this.configOption(type, 'meta'),
-        data = json, value;
-
-    if(meta && json[meta]){
-      data = json[meta];
-    }
-
-    this.metadataMapping.forEach(function(property, key){
-      if(value = data[property]){
-        loader.metaForType(type, key, value);
-      }
-    });
-  },
-*/
   /**
    Tastypie default does not support sideloading
    */
@@ -278,6 +252,11 @@ DS.DjangoTastypieSerializer = DS.RESTSerializer.extend({
 
     var relationshipType = DS.RelationshipChange.determineRelationshipType(record.constructor, relationship);
 
+    // TODO
+    function isEmbedded(config) {
+      return false;
+    }
+
     if (relationshipType === 'manyToNone' || relationshipType === 'manyToMany' || relationshipType === 'manyToOne') {
       if (isEmbedded(config)) {
         json[key] = get(record, key).map(function (relation) {
@@ -292,10 +271,5 @@ DS.DjangoTastypieSerializer = DS.RESTSerializer.extend({
     }
   }
 });
-
-// TODO
-function isEmbedded(config) {
-  return false;
-}
 
 
