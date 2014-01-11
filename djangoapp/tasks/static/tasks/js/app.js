@@ -47,24 +47,6 @@ App.CreatePersonView = Em.TextField.extend({
   }
 });
 
-App.CreateTaskView = Em.TextField.extend({
-  placeholder: "Add a new task",
-  insertNewline: function() {
-    var value,
-        person,
-        task;
-
-    value = this.get('value');
-    person = this.get('person');
-    if (!!value && !!person) {
-      task = App.Task.createRecord({name: value});
-      task.set('person', person.get('model'));
-      App.store.commit();
-      this.set('value', '');
-    }
-  }
-});
-
 // Router
 App.Router.map(function() {
   this.resource('people');
@@ -111,6 +93,18 @@ App.PersonController = Ember.ObjectController.extend({
       // Delete a record associated to another one (belongsTo)
       task.deleteRecord();
       App.store.commit();
+    }
+  },
+
+  actions: {
+    createTask: function(taskName) {
+      var person = this.get('model');
+      task = this.store.createRecord('task', {name: taskName});
+      task.set('person', person);
+      task.save().then(function(task) {
+        person.get('tasks').pushObject(task);
+      });
+      this.set('newTask', '');
     }
   }
 

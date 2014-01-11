@@ -28,7 +28,7 @@ class PersonResource(ModelResource):
 
 class TaskResource(ModelResource):
 
-    person_id = fields.ToOneField(PersonResource, 'person', null=True)
+    person = fields.ToOneField(PersonResource, 'person', null=True)
 
     class Meta:
         queryset = Task.objects.all()

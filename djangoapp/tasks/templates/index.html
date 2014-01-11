@@ -68,12 +68,13 @@
       </li>
     </ul>
     <h4>Tasks</h4>
-      {{partial tasks}}
+      {{partial "tasks"}}
     </ul>
   </script>
 
   <script type="text/x-handlebars" data-template-name="_tasks">
-    {{view App.CreateTaskView personBinding=this}}
+    {{input action="createTask" value=newTask placeholder="New task"}}
+
     <ul>
     {{#each task in tasks}}
       <li>

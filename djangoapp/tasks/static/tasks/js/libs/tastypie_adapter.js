@@ -37,68 +37,6 @@ DS.DjangoTastypieAdapter = DS.RESTAdapter.extend({
   */
   defaultSerializer: '_djangoTastypie',
 
-  /**
-    Create a record in the Django server. POST actions must
-    be enabled in the Resource
-  */
-  createRecord: function(store, type, record) {
-    var data,
-        root = this.rootForType(type),
-        adapter = this;
-
-    data = record.serialize();
-
-    return this.ajax(this.buildURL(root), "POST", {
-      data: data
-    }).then(function(json){
-      adapter.didCreateRecord(store, type, record, json);
-    }, function(xhr) {
-      adapter.didError(store, type, record, xhr);
-      throw xhr;
-    }).then(null, rejectionHandler);
-  },
-
-  /**
-    Edit a record in the Django server. PUT actions must
-    be enabled in the Resource
-  */
-  updateRecord: function(store, type, record) {
-    var id, data,
-        root = this.rootForType(type),
-        adapter = this;
-
-    id = get(record, 'id');
-    data = record.serialize();
-
-    return this.ajax(this.buildURL(root, id), "PUT",{
-      data: data
-    }).then(function(json){
-      adapter.didUpdateRecord(store, type, record, json);
-    }, function(xhr) {
-      adapter.didError(store, type, record, xhr);
-      throw xhr;
-    }).then(null, rejectionHandler);
-  },
-
-  /**
-    Delete a record in the Django server. DELETE actions
-    must be enabled in the Resource
-  */
-  deleteRecord: function(store, type, record) {
-    var id,
-        root = this.rootForType(type),
-        adapter = this;
-
-    id = get(record, 'id');
-
-    return this.ajax(this.buildURL(root, id), "DELETE").then(function(json){
-      adapter.didDeleteRecord(store, type, record, json);
-    }, function(xhr){
-      adapter.didError(store, type, record, xhr);
-      throw xhr;
-    }).then(null, rejectionHandler);
-  },
-
   buildURL: function(record, suffix) {
     var url = this._super(record, suffix);
 
