@@ -99,32 +99,6 @@ DS.DjangoTastypieAdapter = DS.RESTAdapter.extend({
     }).then(null, rejectionHandler);
   },
 
-  findMany: function(store, type, ids) {
-    var url,
-        root = this.rootForType(type),
-        adapter = this;
-
-    ids = this.serializeIds(ids);
-
-    // FindMany array through subset of resources
-    if (ids instanceof Array) {
-      ids = "set/" + ids.join(";") + '/';
-    }
-
-    url = this.buildURL(root);
-    url += ids;
-
-    this.ajax(url, "GET", {
-      success: function(json) {
-        this.didFindMany(store, type, json);
-      }
-    });
-    return this.ajax(url, "GET", {
-    }).then(function(json) {
-      adapter.didFindMany(store, type, json);
-    }).then(null, rejectionHandler);
-  },
-
   buildURL: function(record, suffix) {
     var url = this._super(record, suffix);
 

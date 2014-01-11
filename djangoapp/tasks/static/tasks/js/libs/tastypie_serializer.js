@@ -153,26 +153,38 @@ DS.DjangoTastypieSerializer = DS.RESTSerializer.extend({
     }
     return value;
   },
-/*
-  normalizeId: function(hash) {
-    console.log("id");
+
+  resourceUriToId: function (resourceUri){
+    return resourceUri.split('/').reverse()[1];
   },
 
-  normalizeUsingDeclaredMapping: function(type, hash) {
-    console.log("declared");
+  normalizeRelationships: function (type, hash) {
+    var payloadKey, key, self = this;
+
+    type.eachRelationship(function (key, relationship) {
+      if (this.keyForRelationship) {
+        payloadKey = this.keyForRelationship(key, relationship.kind);
+        if (key !== payloadKey) {
+          hash[key] = hash[payloadKey];
+          delete hash[payloadKey];
+        }
+      }
+      if (hash[key]) {
+        if (relationship.kind === 'belongsTo'){
+          hash[key] = this.resourceUriToId(hash[key]);
+        } else if (relationship.kind === 'hasMany'){
+          var ids = [];
+          hash[key].forEach(function (resourceUri){
+            ids.push(self.resourceUriToId(resourceUri));
+          });
+          hash[key] = ids;
+        }
+      }
+    }, this);
   },
 
-  normalizeAttributes: function(type, hash) {
-    console.log("attributes");
-  },
-
-  normalizeRelationships: function(type, hash) {
-    console.log("relationships");
-  },
-*/
   normalizePayload: function(type, payload) {
-    console.log("Payload", type, payload);
-    payload.people = payload.objects;
+    payload[type.typeKey] = payload.objects;
     delete payload.objects;
     return payload;
   }

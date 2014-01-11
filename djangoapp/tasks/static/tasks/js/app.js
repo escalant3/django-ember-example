@@ -16,7 +16,7 @@ var App = Ember.Application.create();
 // Models
 App.Person = DS.Model.extend({
   name: DS.attr('string'),
-  tasks: DS.hasMany('task')
+  tasks: DS.hasMany('task', {async: true})
 });
 
 App.Task = DS.Model.extend({
@@ -30,8 +30,6 @@ App.TaskView = Ember.View.extend({
   templateName: 'task',
   init: function() {
     this._super();
-
-    //Em.set(this, 'context.availableTags', App.Tag.find());
   }
 });
 
