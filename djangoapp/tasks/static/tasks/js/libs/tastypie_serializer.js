@@ -167,9 +167,73 @@ DS.DjangoTastypieSerializer = DS.RESTSerializer.extend({
 
   extractSingle: function(store, primaryType, payload, recordId, requestType) {
     var newPayload = {};
+    this.extractEmbeddedFromPayload(store, primaryType, payload);
     newPayload[primaryType.typeKey] = payload;
 
     return this._super(store, primaryType, newPayload, recordId, requestType);
+  },
+
+  isEmbedded: function(relOptions) {
+    return !!relOptions && (relOptions.embedded === 'load' || relOptions.embedded === 'always');
+  },
+
+  extractEmbeddedFromPayload: function(store, type, payload) {
+    var self = this;
+    type.eachRelationship(function(key, relationship) {
+      var relOptions = relationship.options;
+
+      if (self.isEmbedded(relOptions)) {
+        if (relationship.kind === 'hasMany') {
+          self.extractEmbeddedFromHasMany(store, key, relationship, payload, relOptions);
+        } else if (relationship.kind === 'belongsTo') {
+          self.extractEmbeddedFromBelongsTo(store, key, relationship, payload, relOptions);
+        }
+      }
+    });
+  },
+
+  extractEmbeddedFromHasMany: function(store, key, relationship, payload, config) {
+    var self = this;
+    var serializer = store.serializerFor(relationship.type.typeKey),
+    primaryKey = get(this, 'primaryKey');
+
+    var ids = [];
+
+    if (!payload[key]) {
+      return;
+    }
+
+    Ember.EnumerableUtils.forEach(payload[key], function(data) {
+      var embeddedType = store.modelFor(relationship.type.typeKey);
+
+      self.extractEmbeddedFromPayload.call(serializer, store, embeddedType, data);
+
+      data = serializer.normalize(embeddedType, data, embeddedType.typeKey);
+
+      ids.push(serializer.relationshipToResourceUri(relationship, data));
+      store.push(embeddedType, data);
+    });
+
+    payload[key] = ids;
+  },
+
+  extractEmbeddedFromBelongsTo: function(store, key, relationship, payload, config) {
+    var serializer = store.serializerFor(relationship.type.typeKey),
+      primaryKey = get(this, 'primaryKey');
+
+    if (!payload[key]) {
+      return;
+    }
+
+    var data = payload[key];
+    var embeddedType = store.modelFor(relationship.type.typeKey);
+
+    extractEmbeddedFromPayload.call(serializer, store, embeddedType, data);
+
+    data = serializer.normalize(embeddedType, data, embeddedType.typeKey);
+    payload[key] = serializer.relationshipToResourceUri(relationship, data);
+
+    store.push(embeddedType, data);
   },
 
   relationshipToResourceUri: function (relationship, value){
@@ -202,13 +266,8 @@ DS.DjangoTastypieSerializer = DS.RESTSerializer.extend({
 
     var relationshipType = DS.RelationshipChange.determineRelationshipType(record.constructor, relationship);
 
-    // TODO
-    function isEmbedded(config) {
-      return false;
-    }
-
     if (relationshipType === 'manyToNone' || relationshipType === 'manyToMany' || relationshipType === 'manyToOne') {
-      if (isEmbedded(config)) {
+      if (this.isEmbedded(config)) {
         json[key] = get(record, key).map(function (relation) {
           var data = relation.serialize();
           return data;
