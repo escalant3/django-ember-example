@@ -45,7 +45,7 @@
 
   <script type="text/x-handlebars" data-template-name="people">
     <h3>People Directory</h3>
-    {{view App.CreatePersonView}}
+    {{input action="createPerson" value=newPerson placeholder="New person"}}
 
     <ul>
     {{#each person in controller}}

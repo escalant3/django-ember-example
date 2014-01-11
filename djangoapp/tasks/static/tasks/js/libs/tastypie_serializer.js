@@ -291,7 +291,11 @@ DS.DjangoTastypieSerializer = DS.RESTSerializer.extend({
       }
     }
   }
-
-
 });
+
+// TODO
+function isEmbedded(config) {
+  return false;
+}
+
 

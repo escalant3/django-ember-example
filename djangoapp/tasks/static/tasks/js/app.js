@@ -66,48 +66,68 @@ App.PeopleRoute = Ember.Route.extend({
   }
 });
 
+App.PeopleController = Ember.ArrayController.extend({
+  actions: {
+    createPerson: function(name) {
+      var person = this.store.createRecord('person', {name: name});
+
+      person.save();
+
+      this.set('newPerson', '');
+    }
+  }
+});
 
 App.PersonController = Ember.ObjectController.extend({
-  editPerson: function(person) {
-    if (!!person) {
-      newName = prompt("Enter new name");
-      if (!!newName && newName !== "") {
-        // Update a record
-        person.set("name", newName);
-        App.store.commit();
-      }
-    }
-  },
-
-  deletePerson: function(person) {
-    if (!!person) {
-      // Delete a record
-      person.deleteRecord();
-      App.store.commit();
-      this.transitionToRoute('people');
-      }
-  },
-
-  deleteTask: function(task) {
-    if (!!task) {
-      // Delete a record associated to another one (belongsTo)
-      task.deleteRecord();
-      App.store.commit();
-    }
-  },
-
   actions: {
     createTask: function(taskName) {
       var person = this.get('model');
-      task = this.store.createRecord('task', {name: taskName});
+      var task = this.store.createRecord('task', {name: taskName});
       task.set('person', person);
+
       task.save().then(function(task) {
         person.get('tasks').pushObject(task);
       });
+
       this.set('newTask', '');
+    },
+
+    editPerson: function(person) {
+      if (!!person) {
+        newName = prompt("Enter new name");
+        if (!!newName && newName !== "") {
+          // Update a record
+          person.set("name", newName);
+          person.save();
+        }
+      }
+    },
+
+    deletePerson: function(person) {
+      if (!!person) {
+        // Delete a record
+        person.deleteRecord();
+        person.save();
+        this.transitionToRoute('people');
+      }
+    },
+
+    deleteTask: function(task) {
+      var taskId;
+      var person = this.get('model');
+
+      if (!!task) {
+        taskId = task.get('id');
+
+        // Delete a record associated to another one (belongsTo)
+        task.deleteRecord();
+
+        task.save().then(function() {
+          person.get('tasks').removeObject(task);
+        });
+      }
     }
   }
-
 });
 
 // Ember-data store using the Django Tastypie adapter
